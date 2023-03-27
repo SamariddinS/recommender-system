@@ -1,2 +1,2 @@
-# recommendation-system
+# Recommender systems
 Recommendation system
