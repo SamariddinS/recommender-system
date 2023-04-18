@@ -132,4 +132,19 @@ cython_debug/
 
 .idea/
 .vscode/
+
+# data
+data/dataset/*
+data/extracted_features/*
+data/train_alpha/*
+*.pkl
 *.pth
+
+code_mock/
+
+#notebooks
+notebooks/*.[^.ipynb]*
+
+#models
+notebooks/models
+models/

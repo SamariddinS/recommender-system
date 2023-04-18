@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 
-from recommender.model import *
+from .model import CompleteNet, KernelNet, torch, Loss
 
 
 class GlocalK:
@@ -132,12 +132,8 @@ class GlocalK:
 		lambda_2, lambda_s, dot_scale = self.get_lds(lambda_2, lambda_s, dot_scale, matrix)
 
 		mask = np.greater(matrix, 1e-12).astype("float32")
-		mask_flat = mask.reshape(
-			-1,
-		)
-		indices = np.argwhere(mask_flat == 1).reshape(
-			-1,
-		)
+		mask_flat = mask.reshape(-1)
+		indices = np.argwhere(mask_flat == 1).reshape(-1)
 		flat_index = np.random.choice(indices, int(len(indices) * val_split))
 		val_mask_flat = np.zeros_like(mask_flat)
 		val_mask_flat[flat_index] = 1
