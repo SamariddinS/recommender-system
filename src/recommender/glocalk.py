@@ -1,4 +1,6 @@
 import os
+parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+
 import time
 
 import numpy as np
@@ -126,7 +128,7 @@ class GlocalK:
 
 		return lambda_2, lambda_s, dot_scale
 
-	def fit(self, matrix: np.array, max_epoch_p=200, max_epoch_f=200, patience_p=10, patience_f=20, tol_p=1e-3, tol_f=1e-3, lambda_2=None, lambda_s=None, dot_scale=None, val_split=0.05, verbose=1, print_each=20, save_folder="models/"):
+	def fit(self, matrix: np.array, max_epoch_p=200, max_epoch_f=200, patience_p=10, patience_f=20, tol_p=1e-3, tol_f=1e-3, lambda_2=None, lambda_s=None, dot_scale=None, val_split=0.05, verbose=1, print_each=20, save_folder="/models"):
 		n_u, n_m = matrix.shape
 
 		lambda_2, lambda_s, dot_scale = self.get_lds(lambda_2, lambda_s, dot_scale, matrix)
@@ -153,10 +155,10 @@ class GlocalK:
 		optimizer_f = torch.optim.AdamW(self.model.parameters(), lr=0.001)
 
 		# Pre-Training
-		epochs_p, best_rmse_p = self.train(self.model.local_kernel_net, optimizer_p, max_epoch=max_epoch_p, patience=patience_p, tol=tol_p, verbose=verbose, print_each=print_each, phase="PRE-TRAINING", save_folder=save_folder)
+		epochs_p, best_rmse_p = self.train(self.model.local_kernel_net, optimizer_p, max_epoch=max_epoch_p, patience=patience_p, tol=tol_p, verbose=verbose, print_each=print_each, phase="PRE-TRAINING", save_folder=parent_dir+save_folder)
 
 		# Fine-Tuning
-		epochs_f, best_rmse_f = self.train(self.model, optimizer_f, max_epoch=max_epoch_f, patience=patience_f, tol=tol_f, verbose=verbose, print_each=print_each, phase="FINE-TUNING", save_folder=save_folder)
+		epochs_f, best_rmse_f = self.train(self.model, optimizer_f, max_epoch=max_epoch_f, patience=patience_f, tol=tol_f, verbose=verbose, print_each=print_each, phase="FINE-TUNING", save_folder=parent_dir+save_folder)
 
 		return {"epochs_p": epochs_p + 1, "epochs_f": epochs_f + 1, "best_rmse_p": best_rmse_p, "best_rmse_f": best_rmse_f}
 
@@ -171,7 +173,7 @@ class GlocalK:
 		scores = new_mask * pred.float().cpu().detach().numpy()
 		return scores[:, user_index]
 
-	def load(self, matrix: np.array, path, lambda_2=None, lambda_s=None, dot_scale=None):
+	def load(self, matrix: np.array, path="/models/best_model_weights.pth", lambda_2=None, lambda_s=None, dot_scale=None):
 		n_u, n_m = matrix.shape
 
 		lambda_2, lambda_s, dot_scale = self.get_lds(lambda_2, lambda_s, dot_scale, matrix)
@@ -184,4 +186,4 @@ class GlocalK:
 		device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 		inner_model = KernelNet(n_m, self.n_hid, self.n_dim, self.n_layers, lambda_s, lambda_2).double().to(device)
 		self.model = CompleteNet(inner_model, n_u, n_m, self.n_hid, self.n_dim, self.n_layers, lambda_s, lambda_2, self.gk_size, dot_scale).double().to(device)
-		self.model.load_state_dict(torch.load(path))
+		self.model.load_state_dict(torch.load(parent_dir+path))
