@@ -132,6 +132,7 @@ cython_debug/
 
 .idea/
 .vscode/
+recommender.code-workspace
 
 # data
 data/dataset/*
